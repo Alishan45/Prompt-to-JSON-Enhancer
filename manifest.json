@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Prompt-to-JSON Enhancer",
+  "version": "1.1.0",
+  "description": "Convert prompts into structured JSON automatically with AI enhancement",
+  "permissions": ["storage", "activeTab", "scripting", "clipboardWrite", "tabs"],
+  "host_permissions": ["<all_urls>", "https://api.openai.com/*", "https://api.anthropic.com/*", "https://generativelanguage.googleapis.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["transformer.js", "content.js"],
+      "css": ["modal.css"]
+    }
+  ],
+  "options_page": "options.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["prompt-page.html", "prompt-page.css", "prompt-page.js", "transformer.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  }
+}

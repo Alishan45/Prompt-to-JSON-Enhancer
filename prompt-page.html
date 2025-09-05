@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Prompt-to-JSON Converter</title>
+  <link rel="stylesheet" href="prompt-page.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧩 Prompt-to-JSON Converter</h1>
+      <p>Transform your prompts into structured JSON format</p>
+    </header>
+
+    <div class="main-content">
+      <div class="input-section">
+        <div class="section-header">
+          <h2>Input Prompt</h2>
+          <button id="clearInput" class="btn-secondary">Clear</button>
+        </div>
+        <textarea id="promptInput" placeholder="Paste your prompt here...
+
+Example:
+Goal: Create a blog post
+Context: For a tech startup
+Audience: Developers and tech enthusiasts
+Tone: Professional but approachable
+
+Steps:
+- Research the topic
+- Create an outline
+- Write the content
+- Review and edit
+
+Output: Markdown format"></textarea>
+      </div>
+
+      <div class="output-section">
+        <div class="section-header">
+          <h2>JSON Output</h2>
+          <div class="output-actions">
+            <button id="copyJson" class="btn-secondary">Copy JSON</button>
+            <button id="downloadJson" class="btn-secondary">Download</button>
+            <button id="formatJson" class="btn-secondary">Format</button>
+          </div>
+        </div>
+        <div class="output-container">
+          <pre id="jsonOutput">Transform your prompt to see the JSON structure here...</pre>
+          <div id="jsonEditor" class="json-editor hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="transform" class="btn-primary">Transform to JSON</button>
+      <button id="toggleEditor" class="btn-secondary">Edit JSON</button>
+      <button id="enhanceWithAI" class="btn-ai" disabled>Enhance with AI</button>
+    </div>
+
+    <div class="footer">
+      <p>Local processing • No data sent to servers unless AI enhancement is enabled</p>
+    </div>
+  </div>
+
+  <script src="transformer.js"></script>
+  <script src="prompt-page.js"></script>
+</body>
+</html>

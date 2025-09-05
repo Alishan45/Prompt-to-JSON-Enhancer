@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Prompt-to-JSON Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <h2>🧩 Prompt-to-JSON Enhancer — Settings</h2>
+  
+  <div class="section">
+    <h3>API Configuration</h3>
+    <div class="form-group">
+      <label for="prov">AI Provider</label>
+      <select id="prov">
+        <option value="openai">OpenAI (GPT)</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="gemini">Google (Gemini)</option>
+      </select>
+      <div class="description">Choose your preferred AI provider for enhanced processing</div>
+    </div>
+    
+    <div class="form-group">
+      <label for="key">API Key</label>
+      <input id="key" type="password" placeholder="Enter your API key...">
+      <div class="description">Your API key is stored locally and never shared</div>
+    </div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="enrich">
+      <label for="enrich">Enable LLM enrichment for better JSON structure</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Actions</h3>
+    <div class="button-group">
+      <button id="save">Save Settings</button>
+      <button id="test">Test API Key</button>
+      <button id="openPromptPage">Open Prompt-to-JSON Page</button>
+    </div>
+    <pre id="status"></pre>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
