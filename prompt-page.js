@@ -7,6 +7,19 @@ class PromptToJSONApp {
     this.initializeElements();
     this.bindEvents();
     this.loadSettings();
+    this.setupStorageListener();
+  }
+
+  setupStorageListener() {
+    // Listen for storage changes to update settings automatically
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'sync') {
+          console.log('Storage changed, refreshing settings:', changes);
+          this.loadSettings();
+        }
+      });
+    }
   }
 
   initializeElements() {
@@ -50,6 +63,7 @@ class PromptToJSONApp {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
         const settings = await chrome.storage.sync.get(['provider', 'key', 'enrich']);
+        console.log('Loaded settings:', settings);
         this.apiSettings = settings;
         // Always enable the enhance button - it will offer local enhancement as fallback
         this.enhanceBtn.disabled = false;
@@ -68,6 +82,12 @@ class PromptToJSONApp {
       this.enhanceBtn.disabled = false;
       this.enhanceBtn.textContent = 'Enhance JSON';
     }
+  }
+
+  // Add method to refresh settings
+  async refreshSettings() {
+    await this.loadSettings();
+    console.log('Settings refreshed:', this.apiSettings);
   }
 
   transformPrompt() {
@@ -138,12 +158,19 @@ class PromptToJSONApp {
     // Check if API key is available
     if (!this.apiSettings || !this.apiSettings.key) {
       // Offer local enhancement as fallback
-      const useLocal = confirm('No API key configured. Would you like to use local enhancement instead?\n\nLocal enhancement will add common fields and improve structure without using AI.');
+      const useLocal = await this.showConfirmDialog(
+        'No API Key Configured',
+        'No API key found. Would you like to use local enhancement instead?',
+        'Local enhancement will add common fields and improve structure without using AI.',
+        'Use Local Enhancement',
+        'Configure API Key'
+      );
+      
       if (useLocal) {
         this.enhanceLocally();
         return;
       } else {
-        this.showNotification('Please configure your API key in the extension options first.', 'error');
+        this.showNotification('Please configure your API key in the extension options first.', 'info');
         return;
       }
     }
@@ -158,17 +185,93 @@ class PromptToJSONApp {
       
       this.showNotification('JSON enhanced successfully with AI!', 'success');
     } catch (error) {
+      console.error('AI Enhancement Error:', error);
       this.showNotification(`AI enhancement failed: ${error.message}`, 'error');
       
       // Offer local enhancement as fallback
-      const useLocal = confirm('AI enhancement failed. Would you like to try local enhancement instead?');
+      const useLocal = await this.showConfirmDialog(
+        'AI Enhancement Failed',
+        'AI enhancement encountered an error. Would you like to try local enhancement instead?',
+        `Error: ${error.message}`,
+        'Use Local Enhancement',
+        'Try Again Later'
+      );
+      
       if (useLocal) {
         this.enhanceLocally();
       }
     } finally {
       this.enhanceBtn.disabled = false;
-      this.enhanceBtn.textContent = `Enhance with ${this.apiSettings.provider || 'AI'}`;
+      this.enhanceBtn.textContent = `Enhance with ${this.apiSettings?.provider?.toUpperCase() || 'AI'}`;
     }
+  }
+
+  showConfirmDialog(title, message, details, confirmText, cancelText) {
+    return new Promise((resolve) => {
+      // Create modal backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'confirm-backdrop';
+      
+      // Create modal dialog
+      const dialog = document.createElement('div');
+      dialog.className = 'confirm-dialog';
+      
+      dialog.innerHTML = `
+        <div class="confirm-header">
+          <h3>${title}</h3>
+        </div>
+        <div class="confirm-body">
+          <p class="confirm-message">${message}</p>
+          ${details ? `<p class="confirm-details">${details}</p>` : ''}
+        </div>
+        <div class="confirm-actions">
+          <button class="confirm-cancel">${cancelText}</button>
+          <button class="confirm-ok">${confirmText}</button>
+        </div>
+      `;
+      
+      backdrop.appendChild(dialog);
+      document.body.appendChild(backdrop);
+      
+      // Add event listeners
+      const cancelBtn = dialog.querySelector('.confirm-cancel');
+      const okBtn = dialog.querySelector('.confirm-ok');
+      
+      const cleanup = () => {
+        document.body.removeChild(backdrop);
+      };
+      
+      cancelBtn.addEventListener('click', () => {
+        cleanup();
+        resolve(false);
+      });
+      
+      okBtn.addEventListener('click', () => {
+        cleanup();
+        resolve(true);
+      });
+      
+      // Close on backdrop click
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          cleanup();
+          resolve(false);
+        }
+      });
+      
+      // Close on Escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          cleanup();
+          resolve(false);
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+      
+      // Focus the OK button
+      setTimeout(() => okBtn.focus(), 100);
+    });
   }
 
   enhanceLocally() {
@@ -256,6 +359,8 @@ class PromptToJSONApp {
       throw new Error('Provider and API key are required');
     }
 
+    console.log('AI API Call - Provider:', provider, 'Key starts with:', key.substring(0, 10) + '...');
+
     const prompt = `Please enhance this JSON structure by:
 1. Adding more detailed and specific fields where appropriate
 2. Improving the organization and hierarchy
@@ -299,7 +404,7 @@ Return only the enhanced JSON, no explanations.`;
         break;
         
       case 'gemini':
-        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
+        apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
         headers = {
           'Content-Type': 'application/json'
         };

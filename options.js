@@ -30,21 +30,28 @@ document.getElementById('save').addEventListener('click', async () => {
 });
 
 document.getElementById('test').addEventListener('click', async () => {
-  const { key, provider } = await chrome.storage.sync.get(['key', 'provider']);
+  // Get current values from the form, not from storage
+  const provider = document.getElementById('prov').value;
+  const key = document.getElementById('key').value;
   
-  if (!key) { 
-    showStatus('No API key set. Please enter your API key first.', 'error');
+  if (!key.trim()) { 
+    showStatus('No API key entered. Please enter your API key first.', 'error');
     return; 
   }
   
-  showStatus('Testing API key...', 'info');
+  if (!provider) {
+    showStatus('No provider selected. Please select a provider first.', 'error');
+    return;
+  }
+  
+  showStatus(`Testing ${provider.toUpperCase()} API key...`, 'info');
   
   try {
-    const isValid = await testAPIKey(key, provider);
+    const isValid = await testAPIKey(key.trim(), provider);
     if (isValid) {
-      showStatus('API key is valid and working!', 'success');
+      showStatus(`${provider.toUpperCase()} API key is valid and working!`, 'success');
     } else {
-      showStatus('API key test failed. Please check your key.', 'error');
+      showStatus(`${provider.toUpperCase()} API key test failed. Please check your key.`, 'error');
     }
   } catch (error) {
     showStatus('Test failed: ' + error.message, 'error');
@@ -90,11 +97,22 @@ async function testAPIKey(key, provider) {
       break;
       
     case 'gemini':
-      apiUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+      // Test with a simple generateContent request instead of listing models
+      apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
       headers = {
         'Content-Type': 'application/json'
       };
-      method = 'GET';
+      body = {
+        contents: [{
+          parts: [{
+            text: 'Hi'
+          }]
+        }],
+        generationConfig: {
+          maxOutputTokens: 10
+        }
+      };
+      method = 'POST';
       break;
       
     default:
@@ -102,14 +120,21 @@ async function testAPIKey(key, provider) {
   }
 
   try {
+    console.log(`Testing ${provider} API with URL: ${apiUrl}`);
+    console.log('Headers:', headers);
+    
     const response = await fetch(apiUrl, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined
     });
 
+    console.log(`Response status: ${response.status}`);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.log('Error response:', errorText);
+      
       let errorMessage = `API test failed (${response.status}): ${response.statusText}`;
       
       try {
@@ -119,6 +144,7 @@ async function testAPIKey(key, provider) {
         }
       } catch (e) {
         // Use default error message if JSON parsing fails
+        console.log('Failed to parse error response as JSON');
       }
       
       throw new Error(errorMessage);
@@ -141,7 +167,7 @@ async function testAPIKey(key, provider) {
         break;
         
       case 'gemini':
-        if (!data.models || !Array.isArray(data.models)) {
+        if (!data.candidates || !Array.isArray(data.candidates)) {
           throw new Error('Invalid response format from Gemini API');
         }
         break;
