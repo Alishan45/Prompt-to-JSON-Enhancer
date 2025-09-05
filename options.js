@@ -57,16 +57,20 @@ document.getElementById('openPromptPage').addEventListener('click', () => {
 });
 
 async function testAPIKey(key, provider) {
-  // Simple test request to validate the API key
-  let apiUrl, headers, body;
+  if (!key || !provider) {
+    throw new Error('API key and provider are required');
+  }
+
+  let apiUrl, headers, body, method = 'GET';
   
-  switch (provider) {
+  switch (provider.toLowerCase()) {
     case 'openai':
       apiUrl = 'https://api.openai.com/v1/models';
       headers = {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json'
       };
+      method = 'GET';
       break;
       
     case 'anthropic':
@@ -79,29 +83,78 @@ async function testAPIKey(key, provider) {
       };
       body = {
         model: 'claude-3-haiku-20240307',
-        max_tokens: 10,
+        max_tokens: 5,
         messages: [{ role: 'user', content: 'Hi' }]
       };
+      method = 'POST';
       break;
       
     case 'gemini':
-      apiUrl = `https://generativelanguage.googleapis.com/v1/models?key=${key}`;
+      apiUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
       headers = {
         'Content-Type': 'application/json'
       };
+      method = 'GET';
       break;
       
     default:
-      throw new Error('Unsupported provider');
+      throw new Error(`Unsupported provider: ${provider}. Supported providers are: openai, anthropic, gemini`);
   }
 
-  const response = await fetch(apiUrl, {
-    method: body ? 'POST' : 'GET',
-    headers,
-    body: body ? JSON.stringify(body) : undefined
-  });
+  try {
+    const response = await fetch(apiUrl, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
 
-  return response.ok;
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `API test failed (${response.status}): ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error) {
+          errorMessage = errorData.error.message || errorData.error.code || errorMessage;
+        }
+      } catch (e) {
+        // Use default error message if JSON parsing fails
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // Additional validation for successful responses
+    const data = await response.json();
+    
+    switch (provider.toLowerCase()) {
+      case 'openai':
+        if (!data.data || !Array.isArray(data.data)) {
+          throw new Error('Invalid response format from OpenAI API');
+        }
+        break;
+        
+      case 'anthropic':
+        if (!data.content || !Array.isArray(data.content)) {
+          throw new Error('Invalid response format from Anthropic API');
+        }
+        break;
+        
+      case 'gemini':
+        if (!data.models || !Array.isArray(data.models)) {
+          throw new Error('Invalid response format from Gemini API');
+        }
+        break;
+    }
+
+    return true;
+    
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to API. Check your internet connection.');
+    }
+    throw error;
+  }
 }
 
 function showStatus(message, type = 'info') {
