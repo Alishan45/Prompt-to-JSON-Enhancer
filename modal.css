@@ -1,108 +1,172 @@
 * {
     box-sizing: border-box;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .pjz-wrap {
     position: fixed;
-    right: 16px;
-    bottom: 16px;
+    right: 24px;
+    bottom: 24px;
     z-index: 2147483647;
 }
 
 .pjz-btn {
-    background: #111;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
     border: none;
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: 12px 20px;
+    border-radius: 9999px; /* Pill shape for floating button */
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .pjz-btn:hover {
-    opacity: .9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
 }
 
 .pjz-modal {
     position: fixed;
     inset: 0;
     display: none;
+    z-index: 2147483647;
 }
 
 .pjz-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, .35);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
 }
 
 .pjz-card {
     position: absolute;
     right: 24px;
-    bottom: 24px;
-    width: min(720px, calc(100vw - 48px));
-    height: min(70vh, 640px);
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+    bottom: 80px; /* Above the floating button */
+    width: min(800px, calc(100vw - 48px));
+    height: min(75vh, 600px);
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    animation: slideUp 0.3s ease-out;
 }
 
 .pjz-head {
-    padding: 14px 16px;
-    border-bottom: 1px solid #eee;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    background: #f8fafc;
 }
 
 .pjz-title {
     font-weight: 700;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.pjz-badge {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 9999px;
 }
 
 .pjz-body {
     flex: 1;
     padding: 0;
     display: flex;
+    overflow: hidden;
 }
 
 .pjz-textarea {
     width: 50%;
     border: none;
     outline: none;
-    padding: 12px;
+    padding: 20px;
     resize: none;
-    border-right: 1px solid #f1f1f1;
+    border-right: 1px solid #f1f5f9;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #334155;
+    background: #ffffff;
+}
+
+.pjz-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.pjz-textarea:focus {
+    box-shadow: inset -4px 0 0 0 rgba(102, 126, 234, 0.1);
 }
 
 .pjz-pre {
     width: 50%;
     margin: 0;
-    padding: 12px;
+    padding: 20px;
     overflow: auto;
-    background: #0b1020;
-    color: #d8e1ff;
-    font-size: 12px;
-    line-height: 1.5;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 13px;
+    line-height: 1.6;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
 }
 
 .pjz-actions {
-    padding: 10px;
+    padding: 16px 24px;
     display: flex;
-    gap: 8px;
+    gap: 12px;
     justify-content: flex-end;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+
+.pjz-actions .pjz-btn {
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
 }
 
 .pjz-secondary {
-    background: #f3f4f6;
-    color: #111;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.pjz-badge {
-    margin-left: auto;
-    font-size: 12px;
-    color: #666;
+.pjz-secondary:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

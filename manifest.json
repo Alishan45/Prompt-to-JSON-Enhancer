@@ -8,14 +8,13 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["transformer.js", "content.js"],
-      "css": ["modal.css"]
+      "js": ["transformer.js", "content.js"]
     }
   ],
   "options_page": "options.html",
   "web_accessible_resources": [
     {
-      "resources": ["prompt-page.html", "prompt-page.css", "prompt-page.js", "transformer.js"],
+      "resources": ["prompt-page.html", "prompt-page.css", "prompt-page.js", "transformer.js", "modal.css"],
       "matches": ["<all_urls>"]
     }
   ],
